@@ -1,8 +1,9 @@
 // =====================================================
 // CONFIGURATION - Gets from config.js
 // =====================================================
-const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? "wss://glseries.net/wisp/";
-const WISP_SERVERS = [{ name: "GLSeries", url: "wss://glseries.net/wisp/" }];
+const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? "wss://i-ready.math.bostoncareercounselor.com/wisp/";
+const WISP_SERVERS = [{ name: "Wisp 1", url: "wss://i-ready.math.bostoncareercounselor.com/wisp/" }, { name: "Wisp 2", url: "wss://glseries.net/wisp/" }, { name: "Wisp 3", url: "wss://powerschool.sonofjohn.ca/wisp" }];
+
 
 // Initialize default proxy server if not set
 if (!localStorage.getItem("proxServer")) {
