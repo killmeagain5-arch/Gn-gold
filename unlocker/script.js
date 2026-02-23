@@ -1,14 +1,25 @@
+// =====================================================
+// CONFIGURATION - Gets from config.js
+// =====================================================
+const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? "wss://glseries.net/wisp/";
+const WISP_SERVERS = [{ name: "GLSeries", url: "wss://glseries.net/wisp/" }];
 
-const DEFAULT_WISP = window.SITE_CONFIG?.defaultWisp ?? "wss://i-ready.math.bostoncareercounselor.com/wisp/";
-const WISP_SERVERS = [{ name: "Wisp 1", url: "wss://i-ready.math.bostoncareercounselor.com/wisp/" }, { name: "Wisp 2", url: "wss://glseries.net/wisp/" }, { name: "Wisp 3", url: "wss://powerschool.sonofjohn.ca/wisp" }];
+// Initialize default proxy server if not set
+if (!localStorage.getItem("proxServer")) {
+    localStorage.setItem("proxServer", DEFAULT_WISP);
+}
 
-
+// Helper to get all servers (config + custom)
 function getAllWispServers() {
     const customWisps = getStoredWisps();
     return [...WISP_SERVERS, ...customWisps];
 }
 
+// =====================================================
+// PROACTIVE SERVER HEALTH CHECKING
+// =====================================================
 
+// Ping a wisp server to check if it's responsive
 async function pingWispServer(url, timeout = 2000) {
     return new Promise((resolve) => {
         const start = Date.now();
@@ -37,13 +48,16 @@ async function pingWispServer(url, timeout = 2000) {
     });
 }
 
+// Find the best (fastest working) server from the list
 async function findBestWispServer(servers, currentUrl) {
     if (!servers || servers.length === 0) return currentUrl;
 
+    // Ping all servers in parallel (faster than sequential)
     const results = await Promise.all(
         servers.map(s => pingWispServer(s.url, 2000))
     );
 
+    // Filter to only working servers and sort by latency
     const working = results
         .filter(r => r.success)
         .sort((a, b) => a.latency - b.latency);
@@ -52,9 +66,11 @@ async function findBestWispServer(servers, currentUrl) {
         return working[0].url;
     }
 
+    // If none working, return current or first
     return currentUrl || servers[0]?.url;
 }
 
+// Proactively check and switch to best server on init
 async function initializeWithBestServer() {
     const autoswitch = localStorage.getItem('wispAutoswitch') !== 'false';
     const allServers = getAllWispServers();
@@ -63,8 +79,9 @@ async function initializeWithBestServer() {
         return;
     }
 
-    const currentUrl = DEFAULT_WISP || DEFAULT_WISP;
+    const currentUrl = localStorage.getItem("proxServer") || DEFAULT_WISP;
     
+    // Check if current server is working, if not find a better one
     const currentCheck = await pingWispServer(currentUrl, 2000);
     
     if (currentCheck.success) {
@@ -72,6 +89,7 @@ async function initializeWithBestServer() {
         return;
     }
 
+    // Current server is bad, find the fastest working server
     console.log("Init: Current server not responding, finding better server...");
     const best = await findBestWispServer(allServers, currentUrl);
     
@@ -83,9 +101,12 @@ async function initializeWithBestServer() {
     }
 }
 
-
+// =====================================================
+// BROWSER STATE
+// =====================================================
 const BareMux = window.BareMux ?? { BareMuxConnection: class { setTransport() {} } };
 
+// SINGLETON: Shared resources for all tabs (prevents connection exhaustion)
 let sharedScramjet = null;
 let sharedConnection = null;
 let sharedConnectionReady = false;
@@ -94,7 +115,9 @@ let tabs = [];
 let activeTabId = null;
 let nextTabId = 1;
 
-
+// =====================================================
+// UTILITIES
+// =====================================================
 const getBasePath = () => {
     const basePath = location.pathname.replace(/[^/]*$/, '');
     return basePath.endsWith('/') ? basePath : basePath + '/';
@@ -113,7 +136,9 @@ const notify = (type, title, message) => {
     }
 };
 
-
+// =====================================================
+// INITIALIZATION
+// =====================================================
 async function getSharedScramjet() {
     if (sharedScramjet) return sharedScramjet;
 
@@ -132,9 +157,11 @@ async function getSharedScramjet() {
     try {
         await sharedScramjet.init();
     } catch (err) {
+        // Handle IndexedDB schema errors by clearing cache and retrying
         if (err.message && err.message.includes('IDBDatabase') || err.message && err.message.includes('object stores')) {
             console.warn('Scramjet IndexedDB error, clearing cache and retrying...');
             
+            // Clear IndexedDB for Scramjet
             try {
                 const dbNames = ['scramjet-data', 'scrambase', 'ScramjetData'];
                 for (const dbName of dbNames) {
@@ -146,6 +173,7 @@ async function getSharedScramjet() {
                 console.warn('Failed to clear IndexedDB:', clearErr);
             }
             
+            // Reset shared instance and retry
             sharedScramjet = null;
             return getSharedScramjet();
         }
@@ -159,7 +187,7 @@ async function getSharedConnection() {
     if (sharedConnectionReady) return sharedConnection;
 
     const basePath = getBasePath();
-    const wispUrl = DEFAULT_WISP ?? DEFAULT_WISP;
+    const wispUrl = localStorage.getItem("proxServer") ?? DEFAULT_WISP;
     
     sharedConnection = new BareMux.BareMuxConnection(basePath + "bareworker.js");
     await sharedConnection.setTransport(
@@ -218,7 +246,7 @@ async function initializeBrowser() {
     elements.backBtn.onclick = () => getActiveTab()?.frame.back();
     elements.fwdBtn.onclick = () => getActiveTab()?.frame.forward();
     elements.reloadBtn.onclick = () => getActiveTab()?.frame.reload();
-    document.getElementById('home-btn-nav').onclick = () => window.location.href = 'NT.html';
+    document.getElementById('home-btn-nav').onclick = () => window.location.href = '../index.html';
     document.getElementById('devtools-btn').onclick = toggleDevTools;
     document.getElementById('wisp-settings-btn').onclick = openSettings;
 
@@ -418,28 +446,11 @@ function handleSubmit(url) {
     let input = url ?? document.getElementById("address-bar").value.trim();
     if (!input) return;
 
-    const engine = localStorage.getItem('lastEngine') 
-        || "https://search.brave.com/search?q=";
-
-    // If already a full URL, do NOT rewrite it
-    if (!/^https?:\/\//i.test(input)) {
-        input = input.includes('.') && !input.includes(' ')
+    if (!input.startsWith('http')) {
+        input = input.includes('.') && !input.includes(' ') 
             ? `https://${input}`
-            : engine + encodeURIComponent(input);
+            : `https://search.brave.com/search?q=${encodeURIComponent(input)}`;
     }
-
-    tab.loading = true;
-    showIframeLoading(true, input);
-    updateLoadingBar(tab, 10);
-    tab.frame.go(input);
-}
-
-const engine = localStorage.getItem('lastEngine') 
-    || "https://search.brave.com/search?q=";
-
-input = input.includes('.') && !input.includes(' ')
-    ? `https://${input}`
-    : engine + encodeURIComponent(input);
     
     tab.loading = true;
     showIframeLoading(true, input);
@@ -455,7 +466,9 @@ function updateLoadingBar(tab, percent) {
     if (percent === 100) setTimeout(() => { bar.style.width = "0%"; }, 200);
 }
 
-
+// =====================================================
+// SETTINGS & WISP
+// =====================================================
 function openSettings() {
     const modal = document.getElementById('wisp-settings-modal');
     modal.classList.remove('hidden');
@@ -471,7 +484,7 @@ function renderServerList() {
     const list = document.getElementById('server-list');
     list.innerHTML = '';
 
-const currentUrl = DEFAULT_WISP;
+    const currentUrl = localStorage.getItem('proxServer') ?? DEFAULT_WISP;
     const allWisps = [...WISP_SERVERS, ...getStoredWisps()];
 
     allWisps.forEach((server, index) => {
@@ -505,6 +518,7 @@ const currentUrl = DEFAULT_WISP;
         checkServerHealth(server.url, item);
     });
 
+    // Add Autoswitch Toggle
     const isAutoswitch = localStorage.getItem('wispAutoswitch') !== 'false';
     const toggleContainer = document.createElement('div');
     toggleContainer.className = 'wisp-option';
@@ -551,6 +565,7 @@ function saveCustomWisp() {
     customWisps.push(newServer);
     localStorage.setItem('customWisps', JSON.stringify(customWisps));
     
+    // Switch to the newly added server
     setWisp(url);
     
     input.value = '';
@@ -626,7 +641,9 @@ function setWisp(url) {
     setTimeout(() => location.reload(), 600);
 }
 
-
+// =====================================================
+// UTILITIES
+// =====================================================
 function toggleDevTools() {
     const win = getActiveTab()?.frame.frame.contentWindow;
     if (!win) return;
@@ -648,9 +665,12 @@ async function checkHashParameters() {
     }
 }
 
-
+// =====================================================
+// MAIN INITIALIZATION
+// =====================================================
 document.addEventListener('DOMContentLoaded', async function () {
     try {
+        // Proactively find the best server before initializing
         await initializeWithBestServer();
         
         await getSharedScramjet();
@@ -662,7 +682,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             // Wait for SW to be ready
             await navigator.serviceWorker.ready;
             
-            const wispUrl = DEFAULT_WISP ?? DEFAULT_WISP;
+            const wispUrl = localStorage.getItem("proxServer") ?? DEFAULT_WISP;
             const allServers = getAllWispServers();
             const autoswitch = localStorage.getItem('wispAutoswitch') !== 'false';
             
@@ -673,6 +693,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 autoswitch: autoswitch
             };
 
+            // Send config to SW
             const sendConfig = async () => {
                 const sw = reg.active || navigator.serviceWorker.controller;
                 if (sw) {
@@ -681,6 +702,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             };
 
+            // Try sending immediately, then retry if needed
             sendConfig();
             setTimeout(sendConfig, 500);
             setTimeout(sendConfig, 1500);
