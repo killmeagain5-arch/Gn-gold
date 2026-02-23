@@ -129,12 +129,30 @@
       background: transparent;
       border: none;
       box-shadow: 0 0 25px rgba(255,215,120,.08);
+      position: relative;
+      outline: none;
     }
 
     .engine-btn.active {
       background: linear-gradient(135deg, var(--gold-1), var(--gold-3));
       color: #2c2107;
       box-shadow: 0 0 30px rgba(255,215,120,0.22);
+    }
+
+    .engine-btn .engine-indicator {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gold-2);
+      border: 2px solid #131313;
+      display: none;
+      pointer-events: none;
+    }
+    .engine-btn.active .engine-indicator {
+      display: inline-block;
     }
 
     .shortcuts {
@@ -229,6 +247,15 @@
       animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* --- new for engine badge animation --- */
+    @keyframes popEngine {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 var(--gold-2);}
+      70% { transform: scale(1.13); box-shadow: 0 0 0 7px rgba(255,191,63,0.18);}
+      100% { transform: scale(1); box-shadow: 0 0 0 0 transparent;}
+    }
+    .engine-btn.animated {
+      animation: popEngine 0.45s cubic-bezier(0.42,0,0.58,1);
+    }
   </style>
 </head>
 
@@ -245,9 +272,18 @@
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" id="searchInput" placeholder="Search the web..." autocomplete="off">
         <div class="engine-picker" id="enginePicker">
-          <button type="button" class="engine-btn" data-url="https://search.brave.com/search?q=">Brave</button>
-          <button type="button" class="engine-btn" data-url="https://www.google.com/search?q=">Google</button>
-          <button type="button" class="engine-btn" data-url="https://duckduckgo.com/?q=">Duck Duck Go</button>
+          <button type="button" class="engine-btn" data-url="https://search.brave.com/search?q=">
+            Brave
+            <span class="engine-indicator"></span>
+          </button>
+          <button type="button" class="engine-btn" data-url="https://www.google.com/search?q=">
+            Google
+            <span class="engine-indicator"></span>
+          </button>
+          <button type="button" class="engine-btn" data-url="https://duckduckgo.com/?q=">
+            Duck Duck Go
+            <span class="engine-indicator"></span>
+          </button>
         </div>
       </form>
     </div>
@@ -290,16 +326,49 @@
     }
 
     // Set engine button active
-    function setActiveEngineButton() {
+    function setActiveEngineButton(effectBtn) {
       engineButtons.forEach(btn => {
         if (btn.dataset.url === currentEngine) {
           btn.classList.add('active');
+          // Animate engine change if effectBtn provided and matches btn
+          if (effectBtn && btn === effectBtn) {
+            btn.classList.remove('animated'); // restart anim
+            void btn.offsetWidth; // reflow hack
+            btn.classList.add('animated');
+          }
         } else {
           btn.classList.remove('active');
         }
       });
     }
     setActiveEngineButton();
+
+    // Show badge on search input for current engine (left of user text)
+    function updateSearchInputIcon() {
+      // Finds the left-side search icon and optionally shows the engine logo
+      // Option 1: Replace the left icon with favicon/engine name
+      const iconEl = document.querySelector("#searchForm .fa-magnifying-glass");
+      const name = engineButtons.find(btn=>btn.dataset.url===currentEngine)?.textContent?.trim() || "";
+      if (!iconEl) return;
+      iconEl.setAttribute('title', `Current: ${name}`);
+      // Optional: animate the icon
+      iconEl.classList.remove('animated-engine-icon');
+      void iconEl.offsetWidth;
+      iconEl.classList.add('animated-engine-icon');
+    }
+    // The following animation:
+    const style = document.createElement('style');
+    style.innerHTML = `
+    .animated-engine-icon {
+      animation: engineIconPop 0.45s cubic-bezier(0.42,0,0.58,1);
+    }
+    @keyframes engineIconPop {
+      0% { transform: scale(1); color: var(--muted);}
+      55% { transform: scale(1.17); color: var(--gold-2);}
+      100% { transform: scale(1); color: var(--muted);}
+    }
+    `;
+    document.head.appendChild(style);
 
     // Scramjet Nav Function
     const nav = url => {
@@ -319,7 +388,21 @@
       btn.addEventListener('click', (e) => {
         currentEngine = btn.dataset.url;
         localStorage.setItem('lastEngine', currentEngine);
-        setActiveEngineButton();
+        setActiveEngineButton(btn);
+
+        // Update search input icon and attributes to reflect the engine switch
+        updateSearchInputIcon();
+
+        // Actually switch the form action and autocomplete (for accessibility and so browser remembers per engine)
+        const searchForm = document.getElementById('searchForm');
+        if (searchForm) {
+          searchForm.setAttribute('data-engine-url', currentEngine);
+        }
+
+        document.querySelector('#searchInput').blur();
+        setTimeout(() => document.querySelector('#searchInput').focus(), 220);
+        // Optionally clear search box or give a short visual cue:
+        // document.querySelector('#searchInput').value = '';
       });
       btn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -329,15 +412,24 @@
       });
     });
 
-    // Set correct .active on load
+    // Set correct .active on load & update icon & update form (to ensure state is initially synced)
     setActiveEngineButton();
+    updateSearchInputIcon();
+    // Actually switch the form action at page load too
+    const searchFormAtLoad = document.getElementById('searchForm');
+    if (searchFormAtLoad) {
+      searchFormAtLoad.setAttribute('data-engine-url', currentEngine);
+    }
 
     // Search Form Logic
     $('#searchForm').addEventListener('submit', e => {
       e.preventDefault();
       const q = $('#searchInput').value.trim();
+      // Always use the current engine for submitting search
+      // (queryForm could have switched engine since load)
+      const engineUrl = document.getElementById('searchForm').getAttribute('data-engine-url') || currentEngine;
       if (q) {
-        const queryUrl = q.match(/^https?:\/\//i) ? q : currentEngine + encodeURIComponent(q);
+        const queryUrl = q.match(/^https?:\/\//i) ? q : engineUrl + encodeURIComponent(q);
         nav(queryUrl);
       }
     });
