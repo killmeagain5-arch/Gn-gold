@@ -493,7 +493,7 @@
   },
   {
     "name": "GTA: Vice City",
-    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold/main/data/local/zones/vicecity.html",
+    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/main/vicecity.html",
     "image": "https://play-lh.googleusercontent.com/soywaPw0kB7fiDHokNdGlxbOijFwLe8XahjnZhJAejpCTcPMdogHEu10hcAF6dBW9LI=w526-h296-rw",
     "description": "Game Active"
   },
@@ -745,7 +745,7 @@
   },
   {
     "name": "Cookie Clicker",
-    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold/main/data/local/zones/Cookie%20Clicker.html",
+    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/main/Cookie%20Clicker.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/82.png",
     "description": "Game Active"
   },
@@ -1341,6 +1341,12 @@
     "name": "Famidash",
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/735.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/735.png",
+    "description": "Game Active"
+  },
+  {
+    "name": "Veck.io",
+    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/main/veckio.html",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9jNmD-sbvVOGCltZmsLM6NSsVkhVOuLL3mQ&s",
     "description": "Game Active"
   }
 ]
