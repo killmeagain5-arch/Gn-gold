@@ -804,18 +804,6 @@
     "description": "Game Active"
   },
   {
-    "name": "Epstein Clicker",
-    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/epsteinclicker.html",
-    "image": "https://i.abcnewsfe.com/a/a0813515-e1d3-4fb3-b3f1-3a49e89795f6/epstein-5-ht-gmh-251219_1766184620739_hpMain.jpg",
-    "description": "Game Active"
-  },
-  {
-    "name": "Epstein Clicker OG",
-    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/epsteinclickerog.html",
-    "image": "https://i.abcnewsfe.com/a/952b4f04-c0ea-4c90-9700-bd9f0e4eb9f9/epstein-9-ht-gmh-251218._1766081526464_hpMain.jpg",
-    "description": "Game Active"
-  },
-  {
     "name": "Solar Smash",
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/118.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/118.png",
@@ -1206,12 +1194,6 @@
     "description": "Game Active"
   },
   {
-    "name": "Five Nights at Epstein's",
-    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/fane.html",
-    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/710.png",
-    "description": "Game Active"
-  },
-  {
     "name": "Hotline Miami",
     "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/hotlinemiami.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/217.png",
@@ -1344,9 +1326,45 @@
     "description": "Game Active"
   },
   {
-    "name": "Roblox",
-    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/main/roblox.html",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Roblox_%282025%29_%28App_Icon%29.svg/250px-Roblox_%282025%29_%28App_Icon%29.svg.png",
+    "name": "Omori",
+    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/main/omori.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/427.png",
+    "description": "Game Active"
+  },
+  {
+    "name": "Orange Roulette",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/659.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/659.png",
+    "description": "Game Active"
+  },
+  {
+    "name": "Friday Night Funkin': VS. Impostor: Alternated",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/633.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/633.png",
+    "description": "Game Active"
+  },
+  {
+    "name": "2048",
+    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/2048.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/114.png",
+    "description": "Game Active"
+  },
+  {
+    "name": "2048 Merge Run",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/375.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/375.png",
+    "description": "Game Active"
+  },
+  {
+    "name": "Escape Road 2",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/265.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/265.png",
+    "description": "Game Active"
+  },
+  {
+    "name": "Jumbo Mario",
+    "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/712.html",
+    "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/712.png",
     "description": "Game Active"
   }
 ]
