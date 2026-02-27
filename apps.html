@@ -36,6 +36,7 @@
       pointer-events: none;
     }
 
+    /* Content above particles */
     header, .section, .iframe-overlay {
       position: relative;
       z-index: 1;
@@ -203,7 +204,6 @@
       box-shadow: 0 0 55px rgba(255,215,120,.75);
     }
 
-    /* --- OVERLAY FIXES --- */
     .iframe-overlay {
       display: none;
       position: fixed;
@@ -214,7 +214,6 @@
       align-items: center;
     }
 
-    /* Fixed Controls at the Top */
     .iframe-controls {
       position: absolute;
       top: 25px;
@@ -331,6 +330,7 @@ let currentIframe = null;
 function createFreshIframe() {
   iframeContainer.innerHTML = '';
   const iframe = document.createElement('iframe');
+  // Permissions for modern games
   iframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; pointer-lock; microphone';
   iframeContainer.appendChild(iframe);
   currentIframe = iframe;
@@ -343,7 +343,7 @@ const priorityGames = [
   "F0rtnite"
 ];
 
-fetch('https://raw.githubusercontent.com/ten8mystery/Vertex-Gold/main/data/apps.json')
+fetch('https://raw.githubusercontent.com/ten8mystery/Vertex-Gold/main/data/games.json')
   .then(res => res.json())
   .then(data => {
     gameList.innerHTML = '';
@@ -369,22 +369,44 @@ fetch('https://raw.githubusercontent.com/ten8mystery/Vertex-Gold/main/data/apps.
       `;
 
       card.querySelector('.play').addEventListener('click', () => {
-        overlay.style.display = 'flex'; 
+        overlay.style.display = 'flex'; // Uses flex to center content
         const iframe = createFreshIframe();
 
-        fetch(game.src)
-          .then(r => r.text())
-          .then(html => {
-            const doc = iframe.contentDocument || iframe.contentWindow.document;
-            doc.open();
-            doc.write(html);
-            doc.close();
-          })
+fetch(game.src)
+  .then(r => r.text())
+  .then(html => {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+  })
           .catch(() => {
             const doc = iframe.contentDocument || iframe.contentWindow.document;
             doc.open();
             doc.write(`<h2 style="color:white;padding:20px;">Failed to load game</h2>`);
             doc.close();
+            iframe.onload = () => {
+
+  const removeAds = () => {
+    const ads =
+      iframe.contentDocument?.querySelectorAll(
+        '#sidebarad1, #sidebarad2'
+      );
+
+    ads?.forEach(ad => ad.remove());
+  };
+
+  // remove immediately
+  removeAds();
+
+  // keep removing if game recreates ads
+  const observer = new MutationObserver(removeAds);
+
+  observer.observe(
+    iframe.contentDocument,
+    { childList: true, subtree: true }
+  );
+};
           });
       });
 

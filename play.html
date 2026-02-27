@@ -372,19 +372,41 @@ fetch('https://raw.githubusercontent.com/ten8mystery/Vertex-Gold/main/data/games
         overlay.style.display = 'flex'; // Uses flex to center content
         const iframe = createFreshIframe();
 
-        fetch(game.src)
-          .then(r => r.text())
-          .then(html => {
-            const doc = iframe.contentDocument || iframe.contentWindow.document;
-            doc.open();
-            doc.write(html);
-            doc.close();
-          })
+fetch(game.src)
+  .then(r => r.text())
+  .then(html => {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+  })
           .catch(() => {
             const doc = iframe.contentDocument || iframe.contentWindow.document;
             doc.open();
             doc.write(`<h2 style="color:white;padding:20px;">Failed to load game</h2>`);
             doc.close();
+            iframe.onload = () => {
+
+  const removeAds = () => {
+    const ads =
+      iframe.contentDocument?.querySelectorAll(
+        '#sidebarad1, #sidebarad2'
+      );
+
+    ads?.forEach(ad => ad.remove());
+  };
+
+  // remove immediately
+  removeAds();
+
+  // keep removing if game recreates ads
+  const observer = new MutationObserver(removeAds);
+
+  observer.observe(
+    iframe.contentDocument,
+    { childList: true, subtree: true }
+  );
+};
           });
       });
 
