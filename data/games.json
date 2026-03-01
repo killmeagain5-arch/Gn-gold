@@ -1368,7 +1368,7 @@
     "description": "Game Active"
   },
   {
-    "name": "Nazi Zombies: Portable",
+    "name": "Zombies: Portable",
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/308.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/308.png",
     "description": "Game Active"
@@ -1377,6 +1377,12 @@
     "name": "Generic Fighter Maybe",
     "src": "https://cdn.jsdelivr.net/gh/gn-math/html@main/519.html",
     "image": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/519.png",
+    "description": "Game Active"
+  },
+  {
+    "name": "Geometry Dash: Advance",
+    "src": "https://raw.githubusercontent.com/ten8mystery/Vertex-Gold-Assets/refs/heads/main/gdadv.html",
+    "image": "https://raw.githubusercontent.com/AleFunky/geometry_dash_advance/heads/main/images/cover.jpg",
     "description": "Game Active"
   }
 ]
